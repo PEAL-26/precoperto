@@ -47,16 +47,31 @@ export async function generateMetadata({
   return { title: `Produto ${cuid}` };
 }
 
-export default async function ProductPage({ params }: { params: Promise<{ cuid: string }> }) {
+export default async function ProductPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ cuid: string }>;
+  searchParams: Promise<{ lat?: string; lng?: string }>;
+}) {
   const { cuid } = await params;
+  const { lat, lng } = await searchParams;
+  const latitude = Number.parseFloat(lat ?? '');
+  const longitude = Number.parseFloat(lng ?? '');
+  const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
   const supabase = await import('@/lib/supabase/server').then((module) =>
     module.createSupabaseServerClient(),
   );
-  const { data, error } = await getProductDetails(supabase, cuid);
+  const { data, error } = await getProductDetails(
+    supabase,
+    cuid,
+    hasCoordinates ? { latitude, longitude } : {},
+  );
   if (error || !data) notFound();
   const payload = data as unknown as ProductPayload;
   const coverUrl = getAssetUrl(payload.product.cover, 'product-assets');
   const store = payload.store;
+  const distance = formatDistance(payload.distance_meters);
   const socialLinks = Object.entries(store.social_links ?? {}).filter(([, value]) =>
     Boolean(value),
   );
@@ -87,6 +102,12 @@ export default async function ProductPage({ params }: { params: Promise<{ cuid: 
               <dt>Estabelecimento</dt>
               <dd>{store.name}</dd>
             </div>
+            {distance ? (
+              <div>
+                <dt>Distância</dt>
+                <dd>{distance}</dd>
+              </div>
+            ) : null}
             {store.city || store.province ? (
               <div>
                 <dt>Localização</dt>

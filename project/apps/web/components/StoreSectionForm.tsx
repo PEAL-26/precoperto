@@ -7,7 +7,14 @@ import { uploadAsset } from '@precoperto/supabase';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { apiRequest } from '@/lib/api';
 
-type Section = 'info' | 'location' | 'contacts' | 'privacy';
+type Section = 'info' | 'location' | 'contacts' | 'socials' | 'privacy';
+
+const SOCIAL_FIELDS: [keyof SocialLinks, string][] = [
+  ['facebook', 'Facebook'],
+  ['instagram', 'Instagram'],
+  ['tiktok', 'TikTok'],
+  ['youtube', 'YouTube'],
+];
 
 export function StoreSectionForm({
   store,
@@ -57,8 +64,8 @@ export function StoreSectionForm({
         Object.assign(body, {
           name: form.name,
           description: form.description || null,
-          social_links: form.social_links,
         });
+      if (section === 'socials') Object.assign(body, { social_links: form.social_links });
       if (section === 'location')
         Object.assign(body, {
           address: form.address || null,
@@ -73,7 +80,6 @@ export function StoreSectionForm({
           whatsapp: form.whatsapp || null,
           email: form.email || null,
           website: form.website || null,
-          social_links: form.social_links,
         });
       if (section === 'privacy') Object.assign(body, { is_private: form.is_private });
       const client = createSupabaseBrowserClient();
@@ -102,6 +108,7 @@ export function StoreSectionForm({
     info: 'Editar perfil',
     location: 'Editar localização',
     contacts: 'Editar contactos',
+    socials: 'Editar redes sociais',
     privacy: 'Privacidade',
   }[section];
   return (
@@ -240,42 +247,24 @@ export function StoreSectionForm({
               onChange={(event) => update('website', event.target.value)}
             />
           </div>
-          <div className="field">
-            <label htmlFor="store-facebook">Facebook</label>
-            <input
-              id="store-facebook"
-              type="url"
-              value={form.social_links.facebook ?? ''}
-              onChange={(event) => updateSocial('facebook', event.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="store-instagram">Instagram</label>
-            <input
-              id="store-instagram"
-              type="url"
-              value={form.social_links.instagram ?? ''}
-              onChange={(event) => updateSocial('instagram', event.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="store-tiktok">TikTok</label>
-            <input
-              id="store-tiktok"
-              type="url"
-              value={form.social_links.tiktok ?? ''}
-              onChange={(event) => updateSocial('tiktok', event.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="store-youtube">YouTube</label>
-            <input
-              id="store-youtube"
-              type="url"
-              value={form.social_links.youtube ?? ''}
-              onChange={(event) => updateSocial('youtube', event.target.value)}
-            />
-          </div>
+        </>
+      ) : null}
+      {section === 'socials' ? (
+        <>
+          <p className="field-hint">
+            Cole apenas o endereço completo do perfil. Deixe em branco para remover a ligação.
+          </p>
+          {SOCIAL_FIELDS.map(([key, label]) => (
+            <div className="field" key={key}>
+              <label htmlFor={`store-${key}`}>{label}</label>
+              <input
+                id={`store-${key}`}
+                type="url"
+                value={form.social_links[key] ?? ''}
+                onChange={(event) => updateSocial(key, event.target.value)}
+              />
+            </div>
+          ))}
         </>
       ) : null}
       {section === 'privacy' ? (

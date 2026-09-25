@@ -11,9 +11,18 @@ import { Modal } from '@/components/Modal';
 import { ProductEditor } from '@/components/ProductEditor';
 import { StoreSectionForm } from '@/components/StoreSectionForm';
 
+const SOCIAL_LABELS: [keyof DashboardData['store']['social_links'], string][] = [
+  ['facebook', 'Facebook'],
+  ['instagram', 'Instagram'],
+  ['tiktok', 'TikTok'],
+  ['youtube', 'YouTube'],
+];
+
 export function ProfileDashboard({ initialData }: { initialData: DashboardData }) {
   const [data, setData] = useState(initialData);
-  const [section, setSection] = useState<'info' | 'location' | 'contacts' | 'privacy' | null>(null);
+  const [section, setSection] = useState<
+    'info' | 'location' | 'contacts' | 'socials' | 'privacy' | null
+  >(null);
   const [hoursOpen, setHoursOpen] = useState(false);
   const [productOpen, setProductOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<
@@ -189,6 +198,40 @@ export function ProfileDashboard({ initialData }: { initialData: DashboardData }
           <section className="panel">
             <div className="panel-header">
               <div>
+                <h2>Redes sociais</h2>
+                <p>Perfis públicos da sua loja</p>
+              </div>
+              <button
+                className="button button-secondary button-small"
+                type="button"
+                onClick={() => setSection('socials')}
+              >
+                Editar
+              </button>
+            </div>
+            <div className="contact-list">
+              {SOCIAL_LABELS.map(([key, label]) => {
+                const value = data.store.social_links?.[key];
+                return value ? (
+                  <a
+                    className="contact-pill"
+                    key={key}
+                    href={value}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {label}
+                  </a>
+                ) : null;
+              })}
+              {Object.values(data.store.social_links ?? {}).every((value) => !value) ? (
+                <span className="muted">Por configurar</span>
+              ) : null}
+            </div>
+          </section>
+          <section className="panel">
+            <div className="panel-header">
+              <div>
                 <h2>Horários</h2>
                 <p>Um período por dia</p>
               </div>
@@ -302,6 +345,7 @@ export function ProfileDashboard({ initialData }: { initialData: DashboardData }
               info: 'Editar perfil',
               location: 'Editar localização',
               contacts: 'Editar contactos',
+              socials: 'Editar redes sociais',
               privacy: 'Privacidade',
             }[section]
           }

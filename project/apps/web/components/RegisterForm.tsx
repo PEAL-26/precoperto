@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { registerSchema } from '@precoperto/schemas';
 
 export function RegisterForm() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,7 +68,8 @@ export function RegisterForm() {
           'Verifique o email recebido para activar a conta. Depois, entre para concluir o perfil.',
         );
       } else {
-        window.location.assign('/my/profile');
+        router.replace('/my/profile');
+        router.refresh();
       }
     } catch (submitError) {
       setError(

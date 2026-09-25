@@ -4,7 +4,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getProductDetails } from '@precoperto/supabase';
 import { getMobileAssetUrl } from '@/lib/assets';
 import { getMobileSupabaseClient } from '@/lib/supabase';
-import { formatCurrency, formatDayOfWeek, formatTime } from '@precoperto/utils';
+import { getLastKnownLocation } from '@/lib/location';
+import { formatCurrency, formatDayOfWeek, formatDistance, formatTime } from '@precoperto/utils';
 import { colors, styles } from '@/lib/styles';
 
 interface ProductPayload {
@@ -35,6 +36,7 @@ interface ProductPayload {
         close_time: string | null;
       }[]
     | null;
+  distance_meters?: number | null;
 }
 
 export default function ProductDetailsScreen() {
@@ -43,12 +45,14 @@ export default function ProductDetailsScreen() {
   const [payload, setPayload] = useState<ProductPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    void getProductDetails(getMobileSupabaseClient(), String(cuid)).then(
-      ({ data, error: rpcError }) => {
-        if (rpcError) setError(rpcError.message);
-        else setPayload(data as unknown as ProductPayload);
-      },
-    );
+    void getProductDetails(
+      getMobileSupabaseClient(),
+      String(cuid),
+      getLastKnownLocation() ?? {},
+    ).then(({ data, error: rpcError }) => {
+      if (rpcError) setError(rpcError.message);
+      else setPayload(data as unknown as ProductPayload);
+    });
   }, [cuid]);
   if (error)
     return (
@@ -120,6 +124,11 @@ export default function ProductDetailsScreen() {
         {payload.store.city || payload.store.province ? (
           <Text style={{ color: colors.muted, marginTop: 5 }}>
             {[payload.store.city, payload.store.province].filter(Boolean).join(', ')}
+          </Text>
+        ) : null}
+        {formatDistance(payload.distance_meters) ? (
+          <Text style={{ color: colors.muted, marginTop: 5 }}>
+            {formatDistance(payload.distance_meters)} de distância
           </Text>
         ) : null}
         {payload.store.is_private ? (

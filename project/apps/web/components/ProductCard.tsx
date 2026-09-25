@@ -3,12 +3,22 @@ import type { SearchProduct } from '@precoperto/types';
 import { formatCurrency, formatDistance, getInitials } from '@precoperto/utils';
 import { getAssetUrl } from '@/lib/assets';
 
-export function ProductCard({ product }: { product: SearchProduct }) {
+export function ProductCard({
+  product,
+  coordinates,
+}: {
+  product: SearchProduct;
+  coordinates?: { latitude: number | null; longitude: number | null };
+}) {
   const coverUrl = getAssetUrl(product.cover, 'product-assets');
   const distance = formatDistance(product.distance_meters);
+  const search =
+    coordinates?.latitude != null && coordinates?.longitude != null
+      ? `?lat=${coordinates.latitude}&lng=${coordinates.longitude}`
+      : '';
 
   return (
-    <Link className="product-card" href={`/products/${product.product_cuid}`}>
+    <Link className="product-card" href={`/products/${product.product_cuid}${search}`}>
       <div className="product-cover">
         {coverUrl ? (
           <img src={coverUrl} alt="" />

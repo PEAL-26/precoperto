@@ -214,7 +214,11 @@ export function ExploreScreen({ initialQuery = '' }: { initialQuery?: string }) 
       {items.length > 0 ? (
         <div className="product-grid">
           {items.map((product) => (
-            <ProductCard key={product.product_cuid} product={product} />
+            <ProductCard
+              key={product.product_cuid}
+              product={product}
+              coordinates={{ latitude, longitude }}
+            />
           ))}
         </div>
       ) : null}

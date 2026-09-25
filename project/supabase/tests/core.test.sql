@@ -1,5 +1,5 @@
 begin;
-select plan(20);
+select plan(22);
 
 select has_table('public', 'users', 'users table exists');
 select has_table('public', 'stores', 'stores table exists');
@@ -44,6 +44,10 @@ set local role anon;
 select is((select count(*) from public.search_products('arroz')), 2::bigint, 'anonymous search returns only active products, including private-store products');
 select is_null((select public.get_public_store('cstore00000000000000000002')), 'anonymous cannot read a private store directly');
 select throws_ok($$insert into public.categories (name) values ('Não permitido')$$, '42501', null, 'anonymous cannot create categories');
+select is_null(
+  public.get_product_details('cproduct000000000000000002', -8.83, 13.23) ->> 'distance_meters',
+  'anonymous product details hide the distance of private stores'
+);
 
 set local role authenticated;
 set local request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
@@ -51,6 +55,10 @@ select is((select count(*) from public.products), 3::bigint, 'owner can read own
 select is((select count(*) from public.stores), 2::bigint, 'owner can read public stores and own private stores');
 select lives_ok($$update public.stores set name = 'Loja Actualizada' where cuid = 'cstore00000000000000000001'$$, 'owner can update own store');
 select throws_ok($$insert into public.users (auth_user_id, name, email, role) values ('11111111-1111-1111-1111-111111111111', 'Escalated', 'owner@example.com', 'admin')$$, '42501', null, 'users cannot self-assign admin role');
+select ok(
+  (public.get_product_details('cproduct000000000000000001', -8.83, 13.23) ->> 'distance_meters')::double precision between 0 and 5000,
+  'product details return a database-computed distance'
+);
 
 set local request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
 select is_empty($$update public.stores set name = 'Invadido' where cuid = 'cstore00000000000000000001' returning cuid$$, 'non-owner cannot update another store');

@@ -225,7 +225,13 @@ as $$
   limit (select page_size from params);
 $$;
 
-create or replace function public.get_product_details(p_product_cuid text)
+drop function if exists public.get_product_details(text);
+
+create function public.get_product_details(
+  p_product_cuid text,
+  p_latitude double precision default null,
+  p_longitude double precision default null
+)
 returns jsonb
 language plpgsql
 stable
@@ -237,6 +243,7 @@ declare
   v_store public.stores%rowtype;
   v_category public.categories%rowtype;
   v_can_view_full_store boolean;
+  v_distance_meters double precision;
 begin
   select * into v_product from public.products where cuid = p_product_cuid;
   if not found then
@@ -249,6 +256,14 @@ begin
   select * into v_store from public.stores where cuid = v_product.store_cuid;
   select * into v_category from public.categories where cuid = v_product.category_cuid;
   v_can_view_full_store := not v_store.is_private or private.is_store_owner(v_store.cuid);
+
+  if p_latitude is not null and p_longitude is not null and v_can_view_full_store then
+    select extensions.st_distance(
+      v_store.location,
+      extensions.st_setsrid(extensions.st_makepoint(p_longitude, p_latitude), 4326)::extensions.geography
+    )
+      into v_distance_meters;
+  end if;
 
   return jsonb_build_object(
     'product', jsonb_build_object(
@@ -288,7 +303,8 @@ begin
       select coalesce(jsonb_agg(to_jsonb(h) order by h.day_of_week), '[]'::jsonb)
       from public.store_hours as h
       where h.store_cuid = v_store.cuid
-    ) else null end
+    ) else null end,
+    'distance_meters', v_distance_meters
   );
 end;
 $$;
@@ -501,11 +517,11 @@ with check ((select private.is_store_owner(store_cuid)));
 
 grant execute on function public.bootstrap_application(text, text, double precision, double precision) to authenticated;
 grant execute on function public.search_products(text, double precision, double precision, integer, double precision, text, integer) to anon, authenticated;
-grant execute on function public.get_product_details(text) to anon, authenticated;
+grant execute on function public.get_product_details(text, double precision, double precision) to anon, authenticated;
 grant execute on function public.get_public_store(text) to anon, authenticated;
 grant execute on function public.get_store_catalog(text) to anon, authenticated;
 revoke execute on function public.bootstrap_application(text, text, double precision, double precision) from public;
 revoke execute on function public.search_products(text, double precision, double precision, integer, double precision, text, integer) from public;
-revoke execute on function public.get_product_details(text) from public;
+revoke execute on function public.get_product_details(text, double precision, double precision) from public;
 revoke execute on function public.get_public_store(text) from public;
 revoke execute on function public.get_store_catalog(text) from public;

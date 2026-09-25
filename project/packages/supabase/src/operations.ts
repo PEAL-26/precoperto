@@ -66,8 +66,21 @@ export async function bootstrapApplication(
   });
 }
 
-export async function getProductDetails(client: DataClient, productCuid: string) {
-  return client.rpc('get_product_details', { p_product_cuid: productCuid });
+export interface ProductDetailsCoordinates {
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+export async function getProductDetails(
+  client: DataClient,
+  productCuid: string,
+  coordinates: ProductDetailsCoordinates = {},
+) {
+  return client.rpc('get_product_details', {
+    p_product_cuid: productCuid,
+    p_latitude: coordinates.latitude ?? null,
+    p_longitude: coordinates.longitude ?? null,
+  });
 }
 
 export async function getPublicStore(client: DataClient, storeCuid: string) {

@@ -23,6 +23,10 @@ coverage/
 .expo-shared/
 *.tsbuildinfo
 
+# Framework generated type references
+next-env.d.ts
+expo-env.d.ts
+
 # Supabase local state
 project/supabase/.branches/
 project/supabase/.temp/
