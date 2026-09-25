@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "PrecoPerto",
+    "slug": "precoperto",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "precoperto",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.precoperto.app"
+    },
+    "android": {
+      "package": "com.precoperto.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#19734A"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permitir ao PrecoPerto usar a sua localização para ordenar resultados."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permitir ao PrecoPerto escolher imagens para o seu perfil."
+        }
+      ],
+      "expo-secure-store"
+    ],
+    "extra": {
+      "supportsOffline": false
+    }
+  }
+}
