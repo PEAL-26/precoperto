@@ -1,0 +1,7 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Expo SDK 57 supports isolated dependencies, but hoisting is intentionally used
+# here to keep the Next.js and Metro resolvers deterministic in this mixed repo.
+nodeLinker: hoisted

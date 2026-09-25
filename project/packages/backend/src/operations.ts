@@ -1,0 +1,26 @@
+export {
+  bootstrapApplication,
+  exchangeCodeForSession,
+  signInWithEmail,
+  signOut,
+  signUpWithEmail,
+  verifyEmailOtp,
+  createCategory,
+  createProduct,
+  deleteCategory,
+  getDashboard,
+  getNextSearchCursor,
+  getProductDetails,
+  getPublicAssetUrl,
+  getPublicStore,
+  getStoreCatalog,
+  listCategories,
+  searchProducts,
+  updateCategory,
+  updateProduct,
+  updateStore,
+  uploadAsset,
+  upsertStoreHours,
+} from '@precoperto/supabase';
+
+export type { DashboardData, DataClient, SearchProductsInput } from '@precoperto/supabase';

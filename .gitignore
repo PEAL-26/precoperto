@@ -1,0 +1,36 @@
+# Local implementation plans and agent working notes
+.plans/
+
+# Dependencies and package-manager state
+node_modules/
+.pnpm-store/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+project/**/.env
+project/**/.env.*
+!project/**/.env.example
+
+# Build and test output
+.turbo/
+.next/
+out/
+dist/
+coverage/
+.expo/
+.expo-shared/
+*.tsbuildinfo
+
+# Supabase local state
+project/supabase/.branches/
+project/supabase/.temp/
+project/supabase/volumes/
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
+*.log
