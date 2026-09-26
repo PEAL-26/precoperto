@@ -195,6 +195,19 @@ export function ExploreScreen({ initialQuery = '' }: { initialQuery?: string }) 
           {error}
         </div>
       ) : null}
+      {error && error.includes('Configuração do Supabase') ? (
+        <div className="empty-state" role="status">
+          <span className="empty-icon" aria-hidden="true">
+            ⚙
+          </span>
+          <h3>Falta configurar o Supabase</h3>
+          <p>
+            Defina <code>NEXT_PUBLIC_SUPABASE_URL</code> e{' '}
+            <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> em <code>apps/web/.env.local</code> e
+            reinicie o servidor.
+          </p>
+        </div>
+      ) : null}
       {loading ? (
         <div className="product-grid">
           <div className="skeleton skeleton-card" />

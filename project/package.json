@@ -20,6 +20,9 @@
     "db:reset": "supabase db reset",
     "db:lint": "supabase db lint",
     "db:test": "supabase test db",
+    "db:link": "supabase link",
+    "db:push": "supabase db push",
+    "db:status": "supabase migration list",
     "admin:promote": "tsx packages/backend/src/cli/promote-admin.ts"
   },
   "devDependencies": {

@@ -69,64 +69,8 @@ begin
 end;
 $$;
 
-create or replace function private.current_user_cuid()
-returns text
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select u.cuid
-  from public.users as u
-  where u.auth_user_id = (select auth.uid())
-  limit 1;
-$$;
-
-create or replace function private.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from public.users as u
-    where u.auth_user_id = (select auth.uid())
-      and u.role = 'admin'
-  );
-$$;
-
-create or replace function private.is_store_owner(p_store_cuid text)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from public.stores as s
-    join public.users as u on u.cuid = s.user_cuid
-    where s.cuid = p_store_cuid
-      and u.auth_user_id = (select auth.uid())
-  );
-$$;
-
-create or replace function private.is_product_owner(p_product_cuid text)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from public.products as p
-    where p.cuid = p_product_cuid
-      and private.is_store_owner(p.store_cuid)
-  );
-$$;
+-- The ownership helpers in this file read the tables below, so they are created
+-- after them. PostgreSQL validates `language sql` bodies at creation time.
 
 create table if not exists public.users (
   cuid text primary key default public.generate_cuid(),
@@ -219,6 +163,68 @@ create table if not exists public.store_hours (
 );
 
 create index if not exists store_hours_store_day_idx on public.store_hours (store_cuid, day_of_week);
+
+-- Ownership and role helpers. These are security definer so that RLS policies can
+-- resolve ownership without granting recursive read access to the clients.
+
+create or replace function private.current_user_cuid()
+returns text
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select u.cuid
+  from public.users as u
+  where u.auth_user_id = (select auth.uid())
+  limit 1;
+$$;
+
+create or replace function private.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.users as u
+    where u.auth_user_id = (select auth.uid())
+      and u.role = 'admin'
+  );
+$$;
+
+create or replace function private.is_store_owner(p_store_cuid text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.stores as s
+    join public.users as u on u.cuid = s.user_cuid
+    where s.cuid = p_store_cuid
+      and u.auth_user_id = (select auth.uid())
+  );
+$$;
+
+create or replace function private.is_product_owner(p_product_cuid text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.products as p
+    where p.cuid = p_product_cuid
+      and private.is_store_owner(p.store_cuid)
+  );
+$$;
 
 create or replace trigger users_set_updated_at
 before update on public.users

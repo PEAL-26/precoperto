@@ -15,6 +15,8 @@ Expo/React Native e Supabase.
 - Packages: contratos, schemas, utilitários, cliente Supabase e backend server-only.
 - Testes: Vitest para packages/web, Jest + RNTL para mobile e pgTAP para a base de dados.
 - CI: lint, type-check, testes, builds e validação Supabase isolada.
+- CD: _Deploy Supabase_ aplica as migrations (e Edge Functions) no projecto remoto
+  a partir do GitHub Actions, com pré-visualização opcional (`dry_run`).
 
 ## Requisitos
 
@@ -45,9 +47,36 @@ confirmeção de email, preencha as variáveis e aplique as migrations:
 ```bash
 cd project
 npx supabase login
-npx supabase link --project-ref <PROJECT_REF>
-npx supabase db push
+npx supabase link --project-ref <PROJECT_REF> --password '<DB_PASSWORD>'
+npx supabase db push --include-all
 ```
+
+### Deploy pelo GitHub Actions
+
+O workflow [`.github/workflows/deploy-supabase.yml`](.github/workflows/deploy-supabase.yml)
+faz o mesmo a partir do GitHub. Configure estes secrets em
+_Settings → Secrets and variables → Actions_:
+
+| Secret                  | Obrigatório | Origem                                           |
+| ----------------------- | ----------- | ------------------------------------------------ |
+| `SUPABASE_PROJECT_REF`  | sim         | Project Settings → General → Reference ID.       |
+| `SUPABASE_DB_PASSWORD`  | sim\*       | Project Settings → Database → DB password.       |
+| `SUPABASE_ACCESS_TOKEN` | não\*\*     | Account → Access Tokens.                         |
+| `SUPABASE_URL`          | opcional    | URL do projecto, para o smoke check pós-deploy.  |
+| `SUPABASE_ANON_KEY`     | opcional    | Chave publicável, para o smoke check pós-deploy. |
+
+\* obrigatório se não usar `SUPABASE_ACCESS_TOKEN`.
+\*\* recomendado; permite `supabase link` e deploy de Edge Functions sem expor a
+password da base de dados ao comando de link.
+
+Depois:
+
+- **Manual e seguro:** Actions → _Deploy Supabase_ → _Run workflow_ com `dry_run`
+  ligado. Lista as migrations pendentes e não altera nada.
+- **Aplicar:** repetir com `dry_run = false`, ou fazer push para `master` com
+  alterações em `project/supabase/`.
+- **Edge Functions:** criar `project/supabase/functions/<nome>/index.ts`; o
+  workflow executa `supabase functions deploy` automaticamente.
 
 Depois de um utilizador registar e confirmar o email, promova o primeiro admin:
 

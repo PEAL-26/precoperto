@@ -1,8 +1,12 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { getPublicSupabaseEnv } from '@/lib/env';
+import { getPublicSupabaseEnv, hasPublicSupabaseEnv } from '@/lib/env';
 
 export async function updateSession(request: NextRequest) {
+  // Without credentials there is no session to refresh. Let the request reach the
+  // page so the UI can explain the missing configuration instead of failing here.
+  if (!hasPublicSupabaseEnv()) return NextResponse.next({ request });
+
   let response = NextResponse.next({ request });
   const { url, anonKey } = getPublicSupabaseEnv();
 
